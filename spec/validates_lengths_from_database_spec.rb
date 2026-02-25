@@ -369,4 +369,49 @@ describe ValidatesLengthsFromDatabase do
     end
   end
 
+  context "i18n support for bytesize validation messages" do
+    before do
+      class ArticleValidateI18n < ActiveRecord::Base
+        self.table_name = "articles"
+        validates_lengths_from_database :only => [:text_1]
+      end
+    end
+
+    context "with default locale" do
+      before do
+        I18n.backend.store_translations(:en, errors: { messages: { too_long_bytes: { one: "is too long (maximum is 1 byte)", other: "is too long (maximum is %{count} bytes)" } } })
+      end
+
+      after do
+        I18n.backend.reload!
+      end
+
+      it "should use the default i18n message for bytesize validation" do
+        skip "PostgreSQL doesn't support limits on text columns" if postgresql?
+        article = ArticleValidateI18n.new(:text_1 => "a" * 10)
+        article.valid?
+        article.errors["text_1"].join.should =~ /too long/
+        article.errors["text_1"].join.should =~ /bytes/
+      end
+    end
+
+    context "with custom locale override" do
+      before do
+        I18n.backend.store_translations(:en, errors: { messages: { too_long_bytes: { one: "ist zu lang (maximal 1 Byte)", other: "ist zu lang (maximal %{count} Bytes)" } } })
+      end
+
+      after do
+        I18n.backend.reload!
+      end
+
+      it "should use the overridden i18n message" do
+        skip "PostgreSQL doesn't support limits on text columns" if postgresql?
+        article = ArticleValidateI18n.new(:text_1 => "a" * 10)
+        article.valid?
+        article.errors["text_1"].join.should =~ /ist zu lang/
+        article.errors["text_1"].join.should =~ /Bytes/
+      end
+    end
+  end
+
 end
