@@ -1,0 +1,6 @@
+en:
+  errors:
+    messages:
+      too_long_bytes:
+        one: "is too long (maximum is 1 byte)"
+        other: "is too long (maximum is %{count} bytes)"
