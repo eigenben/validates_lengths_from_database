@@ -372,45 +372,28 @@ describe ValidatesLengthsFromDatabase do
   context "i18n support for bytesize validation messages" do
     before do
       class ArticleValidateI18n < ActiveRecord::Base
-        self.table_name = "articles"
-        validates_lengths_from_database :only => [:text_1]
+        self.table_name = "articles_high_limit"
+        validates_lengths_from_database :only => [:text_1], :limit => {:text => 5}
       end
     end
 
-    context "with default locale" do
-      before do
-        I18n.backend.store_translations(:en, errors: { messages: { too_long_bytes: { one: "is too long (maximum is 1 byte)", other: "is too long (maximum is %{count} bytes)" } } })
-      end
-
-      after do
-        I18n.backend.reload!
-      end
-
-      it "should use the default i18n message for bytesize validation" do
-        skip "PostgreSQL doesn't support limits on text columns" if postgresql?
-        article = ArticleValidateI18n.new(:text_1 => "a" * 10)
-        article.valid?
-        article.errors["text_1"].join.should =~ /too long/
-        article.errors["text_1"].join.should =~ /bytes/
-      end
+    after do
+      I18n.backend.reload!
     end
 
-    context "with custom locale override" do
-      before do
-        I18n.backend.store_translations(:en, errors: { messages: { too_long_bytes: { one: "ist zu lang (maximal 1 Byte)", other: "ist zu lang (maximal %{count} Bytes)" } } })
-      end
+    it "should use the bundled English message" do
+      article = ArticleValidateI18n.new(:text_1 => "a" * 10)
+      article.valid?
+      article.errors["text_1"].should == ["is too long (maximum is 5 bytes)"]
+    end
 
-      after do
-        I18n.backend.reload!
-      end
+    it "should use an application-provided translation" do
+      I18n.backend.eager_load!
+      I18n.backend.store_translations(:en, errors: { messages: { too_long_bytes: { one: "ist zu lang (maximal 1 Byte)", other: "ist zu lang (maximal %{count} Bytes)" } } })
 
-      it "should use the overridden i18n message" do
-        skip "PostgreSQL doesn't support limits on text columns" if postgresql?
-        article = ArticleValidateI18n.new(:text_1 => "a" * 10)
-        article.valid?
-        article.errors["text_1"].join.should =~ /ist zu lang/
-        article.errors["text_1"].join.should =~ /Bytes/
-      end
+      article = ArticleValidateI18n.new(:text_1 => "a" * 10)
+      article.valid?
+      article.errors["text_1"].should == ["ist zu lang (maximal 5 Bytes)"]
     end
   end
 
