@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.name        = "validates_lengths_from_database"
   s.version     = ValidatesLengthsFromDatabase::VERSION
   s.author      = "Ben Hughes"
-  s.email       = "ben@railsgarden.com"
+  s.email       = "me@benhughes.name"
   s.homepage    = "https://github.com/eigenben/validates_lengths_from_database"
   s.summary     = "Automatic maximum-length validations."
   s.description = "Introspects your database string field maximum lengths and automatically defines length validations."
