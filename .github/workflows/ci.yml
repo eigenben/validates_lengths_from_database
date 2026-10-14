@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    name: Rails ${{ matrix.rails }} / Ruby ${{ matrix.ruby }} / ${{ matrix.db }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [sqlite3, postgresql, mysql]
+        rails: ["6.1", "7.0", "7.1", "7.2", "8.0", "8.1"]
+        include:
+          - { rails: "6.1", ruby: "2.7" }
+          - { rails: "7.0", ruby: "3.1" }
+          - { rails: "7.1", ruby: "3.2" }
+          - { rails: "7.2", ruby: "3.3" }
+          - { rails: "8.0", ruby: "3.4" }
+          - { rails: "8.1", ruby: "4.0" }
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: validates_lengths_from_database_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_DATABASE: validates_lengths_from_database_test
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1" --health-interval 5s --health-timeout 5s --health-retries 20
+
+    env:
+      BUNDLE_GEMFILE: gemfiles/rails_${{ matrix.rails }}.gemfile
+      DB: ${{ matrix.db }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rspec
