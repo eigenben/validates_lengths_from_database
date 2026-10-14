@@ -25,6 +25,12 @@ def small_text_limits?
   !postgresql? && !mysql?
 end
 
+RSpec.configure do |config|
+  config.disable_monkey_patching!
+  config.expect_with(:rspec) { |expectations| expectations.syntax = :expect }
+  config.mock_with(:rspec) { |mocks| mocks.syntax = :expect }
+end
+
 # Load Test Schema into the Database
 ActiveRecord::Migration.verbose = false
 load(File.join(__dir__, "db", "schema.rb"))

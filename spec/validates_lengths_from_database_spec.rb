@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe ValidatesLengthsFromDatabase do
+RSpec.describe ValidatesLengthsFromDatabase do
 
   LONG_ATTRIBUTES = {
     :string_1 => "123456789",
@@ -29,12 +29,12 @@ describe ValidatesLengthsFromDatabase do
 
   context "Model without associated table" do
     specify "defining validates_lengths_from_database should not raise an error" do
-      lambda {
+      expect {
         class InvalidTableArticle < ActiveRecord::Base
           self.table_name = "articles_invalid"
           validates_lengths_from_database
         end
-      }.should_not raise_error
+      }.not_to raise_error
     end
   end
 
@@ -48,7 +48,7 @@ describe ValidatesLengthsFromDatabase do
 
     context "before the table is created" do
       specify "should fail to create records" do
-        lambda { LazyTableArticle.new }.should raise_error
+        expect { LazyTableArticle.new }.to raise_error(ActiveRecord::StatementInvalid)
       end
     end
 
@@ -71,7 +71,7 @@ describe ValidatesLengthsFromDatabase do
         before { @article = LazyTableArticle.new(LONG_ATTRIBUTES.slice(:string_1)); @article.valid? }
 
         specify "should not be valid" do
-          @article.should_not be_valid
+          expect(@article).not_to be_valid
         end
       end
 
@@ -79,7 +79,7 @@ describe ValidatesLengthsFromDatabase do
         before { @article = LazyTableArticle.new(SHORT_ATTRIBUTES.slice(:string_1)); @article.valid? }
 
         specify "should be valid" do
-          @article.should be_valid
+          expect(@article).to be_valid
         end
       end
     end
@@ -96,7 +96,7 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateAll.new(LONG_ATTRIBUTES); @article.valid? }
 
       it "should be valid" do
-        @article.should be_valid
+        expect(@article).to be_valid
       end
     end
   end
@@ -118,14 +118,14 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateAll.new(LONG_ATTRIBUTES); @article.valid? }
 
       it "should not be valid" do
-        @article.should_not be_valid
+        expect(@article).not_to be_valid
       end
 
       it "should have errors on all string/text attributes" do
-        @article.errors["string_1"].join.should =~ /too long/
-        @article.errors["string_2"].join.should =~ /too long/
-        @article.errors["text_1"].join.should =~ /too long/  if small_text_limits?
-        @article.errors["decimal_1"].join.should =~ /less than/
+        expect(@article.errors["string_1"].join).to match(/too long/)
+        expect(@article.errors["string_2"].join).to match(/too long/)
+        expect(@article.errors["text_1"].join).to match(/too long/) if small_text_limits?
+        expect(@article.errors["decimal_1"].join).to match(/less than/)
       end
     end
 
@@ -147,15 +147,15 @@ describe ValidatesLengthsFromDatabase do
       it "should inherit the validation options from the parent" do
         @article = ArticleValidateChild.new(LONG_ATTRIBUTES)
         @article.valid?
-        @article.errors["string_1"].join.should =~ /too long/
-        @article.errors["string_2"].join.should_not =~ /too long/
+        expect(@article.errors["string_1"].join).to match(/too long/)
+        expect(@article.errors["string_2"].join).not_to match(/too long/)
       end
 
       it "should allow changing the validation options of child" do
         @article = ArticleValidateChildOverwrite.new(LONG_ATTRIBUTES)
         @article.valid?
-        @article.errors["string_1"].join.should =~ /too long/
-        @article.errors["string_2"].join.should =~ /too long/
+        expect(@article.errors["string_1"].join).to match(/too long/)
+        expect(@article.errors["string_2"].join).to match(/too long/)
       end
     end
 
@@ -163,7 +163,7 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateAll.new(SHORT_ATTRIBUTES); @article.valid? }
 
       it "should be valid" do
-        @article.should be_valid
+        expect(@article).to be_valid
       end
     end
 
@@ -172,7 +172,7 @@ describe ValidatesLengthsFromDatabase do
         before { @article = ArticleValidateAll.new(:array_1 => %w(1 2 3 4 5 6 7 8 9 10)); @article.valid? }
 
         it "should be valid" do
-          @article.should be_valid
+          expect(@article).to be_valid
         end
       end
     end
@@ -190,13 +190,13 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateLimit.new(LONG_ATTRIBUTES); @article.valid? }
 
       it "should not be valid" do
-        @article.should_not be_valid
+        expect(@article).not_to be_valid
       end
 
       it "should have errors on all string/text attributes" do
-        @article.errors["string_1"].join.should =~ /too long/
-        @article.errors["string_2"].join.should =~ /too long/
-        @article.errors["text_1"].join.should =~ /too long/
+        expect(@article.errors["string_1"].join).to match(/too long/)
+        expect(@article.errors["string_2"].join).to match(/too long/)
+        expect(@article.errors["text_1"].join).to match(/too long/)
       end
     end
 
@@ -205,7 +205,7 @@ describe ValidatesLengthsFromDatabase do
 
 
       it "should be valid" do
-        @article.should be_valid
+        expect(@article).to be_valid
       end
     end
   end
@@ -222,14 +222,14 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateSpecificLimit.new(LONG_ATTRIBUTES); @article.valid? }
 
       it "should not be valid" do
-        @article.should_not be_valid
+        expect(@article).not_to be_valid
       end
 
       it "should have errors on all string/text attributes" do
-        @article.errors["string_1"].join.should =~ /too long/
-        @article.errors["string_2"].join.should =~ /too long/
-        @article.errors["text_1"].should_not be_present
-        @article.errors["decimal_1"].should_not be_present
+        expect(@article.errors["string_1"].join).to match(/too long/)
+        expect(@article.errors["string_2"].join).to match(/too long/)
+        expect(@article.errors["text_1"]).not_to be_present
+        expect(@article.errors["decimal_1"]).not_to be_present
       end
     end
 
@@ -243,7 +243,7 @@ describe ValidatesLengthsFromDatabase do
       end
 
       it "should be valid" do
-        @article.should be_valid
+        expect(@article).to be_valid
       end
     end
 
@@ -254,14 +254,14 @@ describe ValidatesLengthsFromDatabase do
       end
 
       it "should not be valid" do
-        @article.should_not be_valid
+        expect(@article).not_to be_valid
       end
 
       it "should have errors on all string/text attributes" do
-        @article.errors["string_1"].join.should =~ /too long/
-        @article.errors["string_2"].join.should =~ /too long/
-        @article.errors["text_1"].join.should =~ /too long/
-        @article.errors["decimal_1"].should_not be_present
+        expect(@article.errors["string_1"].join).to match(/too long/)
+        expect(@article.errors["string_2"].join).to match(/too long/)
+        expect(@article.errors["text_1"].join).to match(/too long/)
+        expect(@article.errors["decimal_1"]).not_to be_present
       end
     end
 
@@ -272,14 +272,14 @@ describe ValidatesLengthsFromDatabase do
       end
 
       it "should not be valid" do
-        @article.should_not be_valid
+        expect(@article).not_to be_valid
       end
 
       it "should have errors on all string/text attributes" do
-        @article.errors["string_1"].join.should =~ /too long/
-        @article.errors["string_2"].join.should =~ /too long/
-        @article.errors["text_1"].join.should =~ /too long/
-        @article.errors["decimal_1"].should_not be_present
+        expect(@article.errors["string_1"].join).to match(/too long/)
+        expect(@article.errors["string_2"].join).to match(/too long/)
+        expect(@article.errors["text_1"].join).to match(/too long/)
+        expect(@article.errors["decimal_1"]).not_to be_present
       end
     end
   end
@@ -296,7 +296,7 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateOnlyText.new(:text_1 => "😎"*10); @article.valid? }
 
       it "should not be valid" do
-        @article.should_not be_valid
+        expect(@article).not_to be_valid
       end
     end
   end
@@ -313,14 +313,14 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateOnly.new(LONG_ATTRIBUTES); @article.valid? }
 
       it "should not be valid" do
-        @article.should_not be_valid
+        expect(@article).not_to be_valid
       end
 
       it "should have errors on only string_1 and text_1" do
-        @article.errors["string_1"].join.should =~ /too long/
-        (@article.errors["string_2"] || []).should be_empty
-        @article.errors["text_1"].join.should =~ /too long/ if small_text_limits?
-        (@article.errors["decimal_1"] || []).should be_empty
+        expect(@article.errors["string_1"].join).to match(/too long/)
+        expect(@article.errors["string_2"]).to be_empty
+        expect(@article.errors["text_1"].join).to match(/too long/) if small_text_limits?
+        expect(@article.errors["decimal_1"]).to be_empty
       end
     end
 
@@ -328,7 +328,7 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateOnly.new(SHORT_ATTRIBUTES); @article.valid? }
 
       it "should be valid" do
-        @article.should be_valid
+        expect(@article).to be_valid
       end
     end
   end
@@ -345,14 +345,14 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateExcept.new(LONG_ATTRIBUTES); @article.valid? }
 
       it "should not be valid" do
-        @article.should_not be_valid
+        expect(@article).not_to be_valid
       end
 
       it "should have errors on columns other than string_1 and text_1 only" do
-        (@article.errors["string_1"] || []).should be_empty
-        (@article.errors["text_1"] || []).should be_empty
-        @article.errors["decimal_1"].join.should =~ /less than/
-        @article.errors["string_2"].join.should =~ /too long/
+        expect(@article.errors["string_1"]).to be_empty
+        expect(@article.errors["text_1"]).to be_empty
+        expect(@article.errors["decimal_1"].join).to match(/less than/)
+        expect(@article.errors["string_2"].join).to match(/too long/)
       end
     end
 
@@ -360,7 +360,7 @@ describe ValidatesLengthsFromDatabase do
       before { @article = ArticleValidateOnly.new(SHORT_ATTRIBUTES); @article.valid? }
 
       it "should be valid" do
-        @article.should be_valid
+        expect(@article).to be_valid
       end
     end
   end
@@ -380,7 +380,7 @@ describe ValidatesLengthsFromDatabase do
     it "should use the bundled English message" do
       article = ArticleValidateI18n.new(:text_1 => "a" * 10)
       article.valid?
-      article.errors["text_1"].should == ["is too long (maximum is 5 bytes)"]
+      expect(article.errors["text_1"]).to eq(["is too long (maximum is 5 bytes)"])
     end
 
     it "should use an application-provided translation" do
@@ -389,7 +389,7 @@ describe ValidatesLengthsFromDatabase do
 
       article = ArticleValidateI18n.new(:text_1 => "a" * 10)
       article.valid?
-      article.errors["text_1"].should == ["ist zu lang (maximal 5 Bytes)"]
+      expect(article.errors["text_1"]).to eq(["ist zu lang (maximal 5 Bytes)"])
     end
   end
 
