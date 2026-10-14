@@ -87,6 +87,7 @@ end
 * **String (`VARCHAR`) columns** are limited to the column's length in characters.
 * **`TEXT` columns** are limited to the column's length in bytes, since that is how MySQL measures them.
 * **`DECIMAL` columns** with a precision and scale must fit within them. For example, `DECIMAL(5,2)` accepts -999.99 through 999.99.
+* **Integer columns** must fit the column's size, such as -32,768 through 32,767 for `SMALLINT`, including MySQL's `TINYINT` and `UNSIGNED` columns. These are exactly the values Rails would otherwise refuse to save with an `ActiveModel::RangeError`. Use `except:` to skip a column.
 
 Columns without a limit are skipped, so what this gem does depends on your database:
 
@@ -94,10 +95,11 @@ Columns without a limit are skipped, so what this gem does depends on your datab
 * **PostgreSQL**: Rails creates `t.string` columns with no length limit, and `TEXT` columns never have one, so only columns declared with an explicit `limit:` are validated.
 * **SQLite**: limits declared in migrations are validated, even though SQLite itself does not enforce them.
 
-## Translating the bytes error message
+## Translating error messages
 
 `TEXT` columns that are too long get the `too_long_bytes` error, which defaults to "is too long (maximum is %{count} bytes)".
-Override it in your locale files like any other ActiveModel error message:
+Integers that don't fit their column get the `out_of_range` error, which defaults to "is out of range".
+Override them in your locale files like any other ActiveModel error message:
 
 ```yaml
 en:
@@ -106,6 +108,7 @@ en:
       too_long_bytes:
         one: "is too long (maximum is 1 byte)"
         other: "is too long (maximum is %{count} bytes)"
+      out_of_range: "is out of range"
 ```
 
 ## Running Tests

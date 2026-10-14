@@ -57,7 +57,7 @@ module ValidatesLengthsFromDatabase
 
       next if column_schema.nil?
       next if column_schema.respond_to?(:array) && column_schema.array
-      next unless [:string, :text, :decimal].include?(column_schema.type)
+      next unless [:string, :text, :decimal, :integer].include?(column_schema.type)
 
       case column_schema.type
       when :string
@@ -72,6 +72,8 @@ module ValidatesLengthsFromDatabase
         if column_schema.precision && column_schema.scale
           validate_numericality_with_precision(column, column_schema)
         end
+      when :integer
+        validate_integer_range(column)
       end
     end
   end
@@ -104,5 +106,14 @@ module ValidatesLengthsFromDatabase
       :less_than => max_val,
       :greater_than => -max_val
     ).validate(self)
+  end
+
+  # The column type knows its byte size and, on MySQL, whether it is unsigned,
+  # and serializable? is false for exactly the values Rails would refuse to save.
+  def validate_integer_range(column)
+    value = read_attribute_for_validation(column)
+    return if value.nil?
+
+    errors.add(column, :out_of_range) unless self.class.type_for_attribute(column).serializable?(value)
   end
 end

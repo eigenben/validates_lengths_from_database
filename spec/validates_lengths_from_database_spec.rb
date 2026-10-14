@@ -329,6 +329,72 @@ RSpec.describe ValidatesLengthsFromDatabase do
     end
   end
 
+  context "Model with validates_lengths_from_database on integer columns" do
+    before do
+      class ArticleValidateIntegers < ActiveRecord::Base
+        self.table_name = "articles_high_limit"
+        validates_lengths_from_database
+      end
+    end
+
+    def errors_on(column, value)
+      article = ArticleValidateIntegers.new(column => value)
+      article.valid?
+      article.errors[column]
+    end
+
+    ranges = {
+      "INTEGER"  => [:integer_1, -2**31, 2**31 - 1],
+      "SMALLINT" => [:small_1, -2**15, 2**15 - 1],
+      "BIGINT"   => [:big_1, -2**63, 2**63 - 1]
+    }
+    if mysql?
+      ranges["TINYINT"]          = [:tiny_1, -2**7, 2**7 - 1]
+      ranges["INTEGER UNSIGNED"] = [:unsigned_1, 0, 2**32 - 1]
+    end
+
+    ranges.each do |sql_type, (column, min, max)|
+      it "should accept #{min} through #{max} for a #{sql_type} column" do
+        expect(errors_on(column, min)).to be_empty
+        expect(errors_on(column, max)).to be_empty
+      end
+
+      it "should reject values outside #{min} through #{max} for a #{sql_type} column" do
+        expect(errors_on(column, min - 1)).to eq(["is out of range"])
+        expect(errors_on(column, max + 1)).to eq(["is out of range"])
+      end
+    end
+
+    it "should fail validation instead of raising when saving an out-of-range value" do
+      article = ArticleValidateIntegers.new(:integer_1 => 2**31)
+      expect(article.save).to be(false)
+      expect(article.errors["integer_1"]).to eq(["is out of range"])
+    end
+
+    it "should accept enum values stored in integer columns" do
+      klass = stub_const("ArticleWithEnum", Class.new(ActiveRecord::Base) do
+        self.table_name = "articles_high_limit"
+        if ActiveRecord.version >= Gem::Version.new("7.0")
+          enum :small_1, {:draft => 0, :live => 1}
+        else
+          enum :small_1 => {:draft => 0, :live => 1}
+        end
+        validates_lengths_from_database
+      end)
+
+      expect(klass.new(:small_1 => :live)).to be_valid
+    end
+
+    it "should skip integer columns listed in :except" do
+      klass = stub_const("ArticleSkipIntegers", Class.new(ActiveRecord::Base) do
+        self.table_name = "articles_high_limit"
+        validates_lengths_from_database :except => [:integer_1]
+      end)
+
+      expect(klass.new(:integer_1 => 2**31)).to be_valid
+    end
+  end
+
   context "Model with validates_lengths_from_database :only => [:string_1, :text_1]" do
     before do
       class ArticleValidateOnly < ActiveRecord::Base
