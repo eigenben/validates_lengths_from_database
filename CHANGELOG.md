@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.0 (unreleased)
+
+- Validate that integer columns can hold the value, including MySQL `TINYINT` and `UNSIGNED` columns. Values Rails would refuse to save with an `ActiveModel::RangeError` now fail validation with "is out of range" (the `out_of_range` key) instead (#33)
+
 ## v1.0.1 (unreleased)
 
 - Add `validates_lengths_from_database` to ActiveRecord::Base whenever the gem is required, so it works without Rails and no longer depends on Rails being loaded first (#23)
