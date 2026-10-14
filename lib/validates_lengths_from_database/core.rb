@@ -90,24 +90,12 @@ module ValidatesLengthsFromDatabase
     end
 
     def validate_length_by_bytesize(column, column_limit)
-      validator =
-        if ActiveModel::Validations::LengthValidator::RESERVED_OPTIONS.include?(:tokenizer)
-          ActiveModel::Validations::LengthValidator.new(
-            :allow_blank => true,
-            :attributes => [column],
-            :maximum => column_limit,
-            :tokenizer => ->(string) { string.bytes }
-          )
-        else
-          BytesizeValidator.new(
-            :allow_blank => true,
-            :attributes => [column],
-            :maximum => column_limit,
-            :too_long => :too_long_bytes
-          )
-        end
-
-      validator.validate(self)
+      BytesizeValidator.new(
+        :allow_blank => true,
+        :attributes => [column],
+        :maximum => column_limit,
+        :too_long => :too_long_bytes
+      ).validate(self)
     end
 
     def validate_numericality_with_precision(column, column_schema)
