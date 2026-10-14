@@ -13,7 +13,7 @@ module ValidatesLengthsFromDatabase
 
   class Railtie
     def self.insert
-      ActiveRecord::Base.send(:include, ValidatesLengthsFromDatabase)
+      ActiveRecord::Base.include(ValidatesLengthsFromDatabase)
     end
   end
 end
