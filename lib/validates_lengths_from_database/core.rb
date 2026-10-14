@@ -101,7 +101,8 @@ module ValidatesLengthsFromDatabase
     ActiveModel::Validations::NumericalityValidator.new(
       :allow_blank => true,
       :attributes => [column],
-      :less_than => max_val
+      :less_than => max_val,
+      :greater_than => -max_val
     ).validate(self)
   end
 end

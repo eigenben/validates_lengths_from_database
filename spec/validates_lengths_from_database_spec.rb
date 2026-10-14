@@ -301,6 +301,34 @@ RSpec.describe ValidatesLengthsFromDatabase do
     end
   end
 
+  context "Model with validates_lengths_from_database :only => [:decimal_1]" do
+    before do
+      class ArticleValidateDecimal < ActiveRecord::Base
+        self.table_name = "articles"
+        validates_lengths_from_database :only => [:decimal_1]
+      end
+    end
+
+    # decimal_1 is DECIMAL(5,2), which holds -999.99 through 999.99
+    [999.99, -999.99, 0].each do |value|
+      it "should accept #{value}" do
+        expect(ArticleValidateDecimal.new(:decimal_1 => value)).to be_valid
+      end
+    end
+
+    it "should reject values too large for the column" do
+      article = ArticleValidateDecimal.new(:decimal_1 => 1000)
+      expect(article).not_to be_valid
+      expect(article.errors["decimal_1"].join).to match(/less than 1000/)
+    end
+
+    it "should reject values too small for the column" do
+      article = ArticleValidateDecimal.new(:decimal_1 => -1000)
+      expect(article).not_to be_valid
+      expect(article.errors["decimal_1"].join).to match(/greater than -1000/)
+    end
+  end
+
   context "Model with validates_lengths_from_database :only => [:string_1, :text_1]" do
     before do
       class ArticleValidateOnly < ActiveRecord::Base
