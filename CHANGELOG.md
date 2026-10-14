@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.1 (unreleased)
+
+- Add `validates_lengths_from_database` to ActiveRecord::Base whenever the gem is required, so it works without Rails and no longer depends on Rails being loaded first (#23)
+
 ## v1.0.0 (2026-10-14)
 
 - Require Rails (ActiveRecord) 6.1+ and Ruby 2.7+. Apps on older versions can stay on 0.8.x.
