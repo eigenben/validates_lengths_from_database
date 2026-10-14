@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.0 (unreleased)
+## v1.0.0 (2026-10-14)
 
 - Require Rails (ActiveRecord) 6.1+ and Ruby 2.7+. Apps on older versions can stay on 0.8.x.
 - Tested against Rails 6.1 through 8.1 on SQLite, PostgreSQL and MySQL.
