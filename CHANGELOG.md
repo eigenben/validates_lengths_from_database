@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.0.0 (unreleased)
+
+- Require Rails (ActiveRecord) 6.1+ and Ruby 2.7+. Apps on older versions can stay on 0.8.x.
+- Tested against Rails 6.1 through 8.1 on SQLite, PostgreSQL and MySQL.
+- The "too long (bytes)" error for TEXT columns can now be translated with the `too_long_bytes` key (#42) - thanks @Bhalani
+- Validate the lower bound of DECIMAL columns, so -1000 is rejected for DECIMAL(5,2)
+- No longer modify the options hash passed to `validates_lengths_from_database`
+- Accept string keys in the `:limit` hash
+
 ## v0.8.0 (2019-10-30)
 
 - Enforce validation length on TEXT columns via bytes instead of characters (#25)
