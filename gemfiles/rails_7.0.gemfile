@@ -1,0 +1,15 @@
+source "https://rubygems.org"
+
+gem "activerecord", "~> 7.0.0"
+gem "sqlite3", "~> 1.4"
+
+# Rails < 7.1 relies on gems Ruby 3.4 no longer bundles by default,
+# and on concurrent-ruby loading logger for it.
+gem "concurrent-ruby", "< 1.3.5"
+gem "base64"
+gem "bigdecimal"
+gem "drb"
+gem "logger"
+gem "mutex_m"
+
+eval_gemfile "../Gemfile"

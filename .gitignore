@@ -2,10 +2,7 @@
 *.sqlite
 *.log
 *.gem
-Manifest
 pkg
 .bundle
-
-# Appraisal
-# https://github.com/thoughtbot/appraisal#version-control
+Gemfile.lock
 gemfiles/*.lock
