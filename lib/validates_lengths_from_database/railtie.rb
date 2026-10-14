@@ -1,20 +1,9 @@
 module ValidatesLengthsFromDatabase
-  if defined?(Rails::Railtie)
-    require "rails"
-
-    class Railtie < Rails::Railtie
-      initializer "validates_lengths_from_database.extend_active_record" do
-        ActiveSupport.on_load(:active_record) do
-          ValidatesLengthsFromDatabase::Railtie.insert
-        end
-      end
-    end
-  end
-
+  # Kept for apps that call Railtie.insert themselves. Requiring the gem now
+  # adds it to ActiveRecord::Base, so this is no longer needed.
   class Railtie
     def self.insert
       ActiveRecord::Base.include(ValidatesLengthsFromDatabase)
     end
   end
 end
-

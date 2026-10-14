@@ -414,6 +414,28 @@ RSpec.describe ValidatesLengthsFromDatabase do
     end
   end
 
+  context "loading the gem" do
+    def run_ruby(code)
+      lib = File.expand_path("../lib", __dir__)
+      IO.popen([RbConfig.ruby, "-rbundler/setup", "-I", lib, "-e", code], :err => [:child, :out], &:read)
+    end
+
+    {
+      "before ActiveRecord" => %(require "validates_lengths_from_database"; require "active_record"),
+      "after ActiveRecord"  => %(require "active_record"; require "validates_lengths_from_database")
+    }.each do |order, requires|
+      it "should add validates_lengths_from_database to ActiveRecord::Base when required #{order}" do
+        output = run_ruby("#{requires}; print ActiveRecord::Base.respond_to?(:validates_lengths_from_database)")
+        expect(output).to eq("true")
+      end
+    end
+
+    it "should keep Railtie.insert working" do
+      expect { ValidatesLengthsFromDatabase::Railtie.insert }.not_to raise_error
+      expect(ActiveRecord::Base).to respond_to(:validates_lengths_from_database)
+    end
+  end
+
   context "options passed to validates_lengths_from_database" do
     it "should not be modified" do
       only = [:string_1]

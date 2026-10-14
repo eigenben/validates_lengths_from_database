@@ -4,9 +4,6 @@ require "yaml"
 
 require "validates_lengths_from_database"
 
-# Without Rails, the railtie never runs, so include the module ourselves.
-ActiveRecord::Base.include(ValidatesLengthsFromDatabase)
-
 # Establish DB Connection
 database_configs = YAML.safe_load(ERB.new(File.read(File.join(__dir__, "db", "database.yml"))).result)
 ActiveRecord::Base.establish_connection(database_configs.fetch(ENV.fetch("DB", "sqlite3")))
