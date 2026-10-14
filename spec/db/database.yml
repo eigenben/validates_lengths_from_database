@@ -1,21 +1,20 @@
-sqlite:
-  adapter: sqlite
-  database: spec/db/test.sqlite
-
 sqlite3:
   adapter: sqlite3
-  database: spec/db/test.sqlite3
+  database: ":memory:"
 
 postgresql:
   adapter: postgresql
-  username: postgres
-  password: postgres
-  database: has_draft_plugin_test
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
+  port: <%= ENV.fetch("PGPORT", 5432) %>
+  username: <%= ENV.fetch("PGUSER", "postgres") %>
+  password: <%= ENV.fetch("PGPASSWORD", "postgres") %>
+  database: validates_lengths_from_database_test
   min_messages: ERROR
 
 mysql:
-  adapter: mysql
-  host: localhost
-  username: root
-  password:
-  database: has_draft_plugin_test
+  adapter: mysql2
+  host: <%= ENV.fetch("MYSQL_HOST", "127.0.0.1") %>
+  port: <%= ENV.fetch("MYSQL_PORT", 3306) %>
+  username: <%= ENV.fetch("MYSQL_USER", "root") %>
+  password: <%= ENV.fetch("MYSQL_PASSWORD", "") %>
+  database: validates_lengths_from_database_test

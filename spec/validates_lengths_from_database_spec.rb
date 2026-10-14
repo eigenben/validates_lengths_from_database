@@ -22,10 +22,6 @@ describe ValidatesLengthsFromDatabase do
     :float_1 => 12.34
   }
 
-  before(:all) do
-    ActiveSupport::Deprecation.silenced = true
-  end
-
   class ApplicationRecord < ActiveRecord::Base
     self.abstract_class = true
     validates_lengths_from_database :limit => 255
@@ -128,7 +124,7 @@ describe ValidatesLengthsFromDatabase do
       it "should have errors on all string/text attributes" do
         @article.errors["string_1"].join.should =~ /too long/
         @article.errors["string_2"].join.should =~ /too long/
-        @article.errors["text_1"].join.should =~ /too long/  unless postgresql?  # PostgreSQL doesn't support limits on text columns
+        @article.errors["text_1"].join.should =~ /too long/  if small_text_limits?
         @article.errors["decimal_1"].join.should =~ /less than/
       end
     end
@@ -171,7 +167,7 @@ describe ValidatesLengthsFromDatabase do
       end
     end
 
-    if database_supports_arrays?
+    if postgresql?
       context "an article with with string array attribute" do
         before { @article = ArticleValidateAll.new(:array_1 => %w(1 2 3 4 5 6 7 8 9 10)); @article.valid? }
 
@@ -323,7 +319,7 @@ describe ValidatesLengthsFromDatabase do
       it "should have errors on only string_1 and text_1" do
         @article.errors["string_1"].join.should =~ /too long/
         (@article.errors["string_2"] || []).should be_empty
-        @article.errors["text_1"].join.should =~ /too long/ unless postgresql?  # PostgreSQL doesn't support limits on text columns
+        @article.errors["text_1"].join.should =~ /too long/ if small_text_limits?
         (@article.errors["decimal_1"] || []).should be_empty
       end
     end
