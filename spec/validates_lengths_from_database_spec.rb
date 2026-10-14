@@ -393,6 +393,27 @@ RSpec.describe ValidatesLengthsFromDatabase do
     end
   end
 
+  if mysql?
+    context "MySQL's default column limits" do
+      before do
+        class ArticleValidateMysqlDefaults < ActiveRecord::Base
+          self.table_name = "articles_high_limit"
+          validates_lengths_from_database
+        end
+      end
+
+      it "should limit VARCHAR(255) columns to 255 characters" do
+        expect(ArticleValidateMysqlDefaults.new(:string_1 => "😎" * 255)).to be_valid
+        expect(ArticleValidateMysqlDefaults.new(:string_1 => "a" * 256)).not_to be_valid
+      end
+
+      it "should limit TEXT columns to 65,535 bytes" do
+        expect(ArticleValidateMysqlDefaults.new(:text_1 => "a" * 65_535)).to be_valid
+        expect(ArticleValidateMysqlDefaults.new(:text_1 => "😎" * 16_384)).not_to be_valid
+      end
+    end
+  end
+
   context "options passed to validates_lengths_from_database" do
     it "should not be modified" do
       only = [:string_1]
