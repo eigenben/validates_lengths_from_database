@@ -365,6 +365,34 @@ RSpec.describe ValidatesLengthsFromDatabase do
     end
   end
 
+  context "options passed to validates_lengths_from_database" do
+    it "should not be modified" do
+      only = [:string_1]
+      limit = {"string" => 3}
+      options = {"only" => only, "limit" => limit}
+
+      klass = stub_const("ArticleWithSharedOptions", Class.new(ActiveRecord::Base) do
+        self.table_name = "articles"
+        validates_lengths_from_database(options)
+      end)
+      klass.validate_lengths_from_database_options[:only] << :string_2
+
+      expect(options).to eq("only" => [:string_1], "limit" => {"string" => 3})
+      expect(only).to eq([:string_1])
+    end
+
+    it "should accept a limit hash with string keys" do
+      klass = stub_const("ArticleWithStringLimitKeys", Class.new(ActiveRecord::Base) do
+        self.table_name = "articles_high_limit"
+        validates_lengths_from_database("limit" => {"string" => 3})
+      end)
+
+      article = klass.new(:string_1 => "1234")
+      expect(article).not_to be_valid
+      expect(article.errors["string_1"].join).to match(/too long/)
+    end
+  end
+
   context "i18n support for bytesize validation messages" do
     before do
       class ArticleValidateI18n < ActiveRecord::Base

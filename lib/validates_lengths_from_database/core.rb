@@ -11,15 +11,16 @@ module ValidatesLengthsFromDatabase
 
   module ClassMethods
     def validates_lengths_from_database(options = {})
-      options.symbolize_keys!
+      # Copy everything we keep so later changes to the stored options
+      # (see README) never leak back into the caller's hash or arrays.
+      options = options.symbolize_keys
 
-      options[:only]    = Array[options[:only]]   if options[:only] && !options[:only].is_a?(Array)
-      options[:except]  = Array[options[:except]] if options[:except] && !options[:except].is_a?(Array)
-      options[:limit] ||= {}
+      options[:only]   = Array(options[:only]).dup   if options[:only]
+      options[:except] = Array(options[:except]).dup if options[:except]
 
-      if options[:limit] and !options[:limit].is_a?(Hash)
-        options[:limit] = {:string => options[:limit], :text => options[:limit], :decimal => options[:limit], :integer => options[:limit], :float => options[:limit]}
-      end
+      limit = options[:limit] || {}
+      options[:limit] = limit.is_a?(Hash) ? limit.symbolize_keys : {:string => limit, :text => limit}
+
       @validate_lengths_from_database_options = options
 
       validate :validate_lengths_from_database
